@@ -12,17 +12,29 @@ class SOT3(LieGroup):
         self._R = SO3(R)
         self._s = MR1(s)
     
-    def R(self) -> np.ndarray:
+    def R(self) -> SO3:
         return self._R
     
-    def s(self) -> np.ndarray:
+    def s(self) -> MR1:
         return self._s
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.as_matrix())
     
-    def Adjoint(self):
-        return NotImplemented
+    def Adjoint(self) -> np.ndarray:
+        Ad = np.zeros((4,4))
+        Ad[0:3,0:3] = self.R().Adjoint()
+        Ad[3,3] = self.s().Adjoint()
+        return Ad
+
+    @staticmethod
+    def adjoint(sotvec: np.ndarray) -> np.ndarray:
+        assert isinstance(sotvec, np.ndarray)
+        assert sotvec.shape == (4,1)
+        ad = np.zeros((4,4))
+        OmegaCross = SO3.skew(sotvec[0:3,:])
+        ad[0:3,0:3] = OmegaCross
+        return ad
     
     def __mul__(self, other):
         if isinstance(other, SOT3):

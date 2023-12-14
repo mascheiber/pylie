@@ -9,7 +9,7 @@ class MR1(LieGroup):
     def __init__(self, s = 1.0):
         self._scale = s
     
-    def scale(self):
+    def scale(self) -> float:
         return self._scale
     
     def Adjoint(self):
