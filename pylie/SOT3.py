@@ -1,5 +1,6 @@
 from .LieGroup import LieGroup
 from .SO3 import SO3 as SO3
+from .R3 import R3 as R3
 from .MR1 import MR1 as MR1
 import numpy as np
 
@@ -42,12 +43,30 @@ class SOT3(LieGroup):
             result._R = self._R * other._R
             result._s = self._s * other._s
             return result
+        if isinstance(other, SO3):
+            result = SOT3()
+            result._R = self._R * other
+            result._s = self._s
+            return result
+        if isinstance(other, R3):
+            return self._s * (self._R * other)
         if isinstance(other, np.ndarray):
             if other.shape[0] == 3:
                 return self._s * (self._R * other)
             elif other.shape[0] == 4:
                 return self.as_matrix() @ other
         
+        return NotImplemented
+
+    def __rmul__(self, other):
+        if isinstance(other, SO3):
+            result = SOT3()
+            result._R = other * self._R
+            result._s = self._s
+            return result
+        if isinstance(other, R3):
+            return self._s * (other * self._R)
+
         return NotImplemented
     
     @staticmethod
