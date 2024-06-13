@@ -5,6 +5,8 @@ from .R3 import R3 as R3
 import numpy as np
 
 class SE23(LieGroup):
+    __array_ufunc__ = None   # to allow __rmul__ with numpy arrays to work
+
     def __init__(self, R : SO3 = None, x : R3 = None, w : R3 = None):
         if R is None:
             R = SO3()
@@ -67,6 +69,12 @@ class SE23(LieGroup):
             if other.shape[0] == 5:
                 return self.as_matrix() @ other
         
+        return NotImplemented
+
+    def __rmul__(self, other):
+        if isinstance(other, np.ndarray):
+            if other.shape[0] == 5:
+                return other @ self.as_matrix()
         return NotImplemented
     
     @staticmethod

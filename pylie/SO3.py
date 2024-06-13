@@ -5,6 +5,8 @@ from scipy.spatial.transform import Rotation
 import numpy as np
 
 class SO3(LieGroup):
+    __array_ufunc__ = None   # to allow __rmul__ with numpy arrays to work
+
     def __init__(self, R = None):
         self._rot = Rotation.identity()
         if isinstance(R, np.ndarray):
@@ -14,8 +16,7 @@ class SO3(LieGroup):
         elif isinstance(R, Rotation):
             self._rot = R
             
-        
-    
+
     def R(self) -> np.ndarray:
         return self._rot.as_matrix()
 
@@ -30,6 +31,14 @@ class SO3(LieGroup):
     
     def Adjoint(self):
         return self._rot.as_matrix()
+
+    @staticmethod
+    def adjoint(so3vec: np.ndarray) -> np.ndarray:
+        assert isinstance(so3vec, np.ndarray)
+        assert so3vec.shape == (3, 1)
+        ad = np.zeros((3, 3))
+        ad[0:3, 0:3] = SO3.skew(so3vec[0:3, :])
+        return ad
     
     def __mul__(self, other):
         if isinstance(other, SO3):
@@ -42,6 +51,21 @@ class SO3(LieGroup):
             result = R3()
             result._trans = self._rot.as_matrix() @ other._trans
             return result
+        return NotImplemented
+
+    def __rmul__(self, other):
+        if isinstance(other, np.ndarray) and other.shape[1] == 3:
+            return other @ self._rot.as_matrix()
+        return NotImplemented
+
+    def __matmul__(self, other):
+        if isinstance(other, np.ndarray) and other.shape[0] == 3:
+            return self._rot.as_matrix() @ other
+        return NotImplemented
+
+    def __rmatmul__(self, other):
+        if isinstance(other, np.ndarray) and other.shape[1] == 3:
+            return other @ self._rot.as_matrix()
         return NotImplemented
     
     def __truediv__(self, other):
